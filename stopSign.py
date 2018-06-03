@@ -280,7 +280,7 @@ if __name__ == "__main__":
     # Loading, splitting and preprocessing the data
     model = StopSigns()
     model.split_data()
-    model.vectorize_sets(keep_edge=1)
+    model.vectorize_sets(keep_edge=0)
     
     # PCA Looking at the explained variance by the principal components and choosing k
     model.do_pca(10, plot = 1)
@@ -314,7 +314,11 @@ if __name__ == "__main__":
     """ For a new image """
     
     headings_new_img=[]
+    # loading the new images
     real_img = mpimg.imread("real_images/1.jpg")
+    real_img2 = mpimg.imread("real_images/2.jpg")
+    
+    # evaluating the previous model on the first image
     real_img_vec = vectorize_single(real_img, keep_edge=1)
     real_img_proj = model.pca.transform(real_img_vec.reshape((1,-1)))
     for n_neighbors in range(1,500):
@@ -333,26 +337,22 @@ if __name__ == "__main__":
     # RED PERCENTAGE 
     red_threshold = 200
     
-    real_image_red_percentage = compute_red_percentage(real_img[0], red_threshold)
-        
+    # Red pixels percentage distribution function of the heading
     red_distribution = []
     for i in range(model.train_images.shape[0]):
-        red = compute_red_percentage(model.train_images[i],red_threshold)
+        red = compute_red_percentage(model.train_images[i][:,:,0],red_threshold)
         red_distribution.append(red)
     red_distribution = np.array(red_distribution).reshape((-1,1))
     
     plt.title("Red pixel percentage function of heading")
     plt.plot(model.headings,red_distribution[::18],c='r')
-    plt.plot(model.headings,np.full((161,1),real_image_red_percentage),c='b')
     plt.show()
     
     
     
-    
-
-    test = real_img.copy()
-    #test= model.train_images[0]
-    plt.imshow(test)
+    # Compute red percentage on real images
+    temp_real_img = real_img.copy()
+    plt.imshow(temp_real_img)
     plt.show()
 
     
@@ -362,123 +362,37 @@ if __name__ == "__main__":
     alpha = 0.04
     for i in range(275):
         for j in range(275):
-            if (test[i,j,1]==0):
-                cb = test[i,j,0]
+            if (temp_real_img[i,j,1]==0):
+                cb = temp_real_img[i,j,0]
             else: 
-                cb = test[i,j,0]/test[i,j,1]
-            if (test[i,j,2]==0):
-                cg = test[i,j,0]
+                cb = temp_real_img[i,j,0]/temp_real_img[i,j,1]
+            if (temp_real_img[i,j,2]==0):
+                cg = temp_real_img[i,j,0]
             else: 
-                cg = test[i,j,0]/test[i,j,2]
+                cg = temp_real_img[i,j,0]/temp_real_img[i,j,2]
             R = cb*cg - alpha*(cb+cg)**2
             only_red[i,j] = R
+            
+    plt.hist(only_red.ravel(), bins=40)
+    plt.show()
     
-    only_red[only_red<10]=0
-    only_red[only_red>=10]=1
+    # threshold
+    only_red[only_red<12]=0
+    only_red[only_red>=12]=1
 
     plt.imshow(only_red,cmap='gray')
+    plt.axis("off")
     plt.show()
     
     
-    print(len(only_red[only_red==1])/(only_red.shape[0]*only_red.shape[1]))
-    
-    """
-    # TEMPLATE MATCHING ATTEMPT
-    NW = mpimg.imread("templates/NW.jpg")
-    NW = gaussian_filter(NW, sigma = 2)
-    im1 = model.train_images[81*18]
-    im2 = model.train_images[2*18]
-
-    
-
-
-    plt.title("template North-West")
-    plt.imshow(NW)
-    plt.show()
-    correlation_map = match_template(im2, NW)
-    plt.imshow(correlation_map[:,:,0], cmap="gray")
-    plt.show()
-    print("The template position is at: ",np.unravel_index(correlation_map.argmax()\
-                            , correlation_map.shape))
-    
-    """
-    # EDGES
-    """
-    im3 = real_img.copy()
-    im3 = gaussian_filter(im3, sigma = 2)
-    im3= model.train_images[2*18].copy()
-    im3 = gaussian_filter(im3, sigma = 1.5)
-    plt.imshow(im3)
-    plt.show()
-    print("############# Canny Edge detector ############# ")
-    grayImg = cv2.cvtColor(im3, cv2.COLOR_RGB2GRAY) 
-    plt.imshow(grayImg,cmap="gray")
-    plt.show()
-    cannyEdges = cv2.Canny(np.uint8(grayImg*255),30,140) #accept only uint8 images
-    plt.title("Canny Edge detector")
-    plt.imshow(gaussian_filter(cannyEdges,sigma=1),cmap="gray")
-    plt.show()
-    
-    
-    plt.imshow(gaussian_filter(model.X_train[105*18].reshape(275,275),sigma=2))
-    """
-            
-    """ SANDBOX """
-    """
-    # original image
-    sand_img = model.train_images[150].copy()
-    plt.imshow(sand_img)
-    plt.show()
-    # gray image - then blurred (gaussian)
-    gray_img = cv2.cvtColor(sand_img, cv2.COLOR_RGB2GRAY)
-    gray_img = gaussian_filter(gray_img, sigma = 2)
-    plt.imshow(gray_img,cmap='gray')
-    plt.show()
-    
-    
-    # find threshold for white
-    plt.hist(gray_img.ravel(), bins=100)
-    plt.show()
-    
-    white_threshold = 145
-    
-    argmax_indices=[]
-    for i in range(gray_img.shape[0]):
-        row = gray_img[i,:]
-        argmax_indices.append(np.where(row>=white_threshold)[0][0])
-    argmax_indices = np.array(argmax_indices)
-    
-    plt.plot(argmax_indices)
-    plt.show()
-    
-    # remove noisy background
-    white_img = gray_img.copy()
-    white_img[white_img<white_threshold]=0
-    plt.imshow(white_img,cmap='gray')
-    plt.show()
-    
-    
-    def red_preprocessing(self, images):
-    
-        Images are drawn from the training, validation or testing set.
-            images is usually: self.train_images, self.val_images, or self.test_images
-        Return the matrix of features drawn from the images
-        
-        
-        # Compute red percentage in an image
-        red_percentages_ = []
-        
-        for i in range(images.shape[0]):
-            red = compute_red_percentage(images[i],self.red_threshold)
-            red_percentages_.append(red)
-        X = np.array(red_percentages_).reshape((-1,1))
-        
-        return X
+    print("The red percentage of the real image is {0}".format(\
+          len(only_red[only_red==1])/(only_red.shape[0]*only_red.shape[1])))
     
     
     
-    """
-
+    
+    
+    
 
 
 

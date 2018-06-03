@@ -85,12 +85,16 @@ Let's perform our algorithm on this following image:
 ![Alt text](real_images/1.jpg?raw=true "Real image of a stop sign")
 We don't know the true heading of this image. But our machine learning model, after transforming it in grayscale, blurring, vectorizing, projecting on the first 5 components previously computed, and predicting the heading based on the 3-NN fitted model returns a prediction of a -78°, which is far from corresponding to the true heading (which is greater than 0).
 Even increasing the number of nearest neighbor show a maximum heading prediction of  6° which corresponds to this orientation:
+
 ![Alt text](real_images/sign_6_0.jpg?raw=true "Stop Sign with a 6° heading")
+
 Here is the plot showing the influence of the number of nearest neighbors considered:
+
 ![Alt text](plots/on_real_image.png?raw=true "Influence of the number of Nearest Neighbors")
 
 
 This shows that our model overfit to some clean data and cannot be used as it is on not pre-processed images.
+As the next steps considered, one option could be to detect the stop sign and perform image processing or segementation algorithm to remove the background. And then apply our model to predict the heading.
 
 
 

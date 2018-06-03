@@ -22,10 +22,11 @@ we start by separating the dataset with the following ratios (that can be tuned)
 For each heading, corresponds 30 images, from which I randomly sampled the corresponding number of train, validation, and test images.
 
 #### Data visualization
-The size of the images (275 x 275 = 75,625 pixels), it is feasible to vectorize each of them and store them into a matrix. That way, we constitute, X_train, X_val and X_test.
-X_train is a 2898 x 75625 matrix.
+The size of the images (275 x 275 = 75,625 pixels), it is feasible to vectorize each of them and store them into a matrix. Before that, we take care to convert the images into grayscale and blur them, by performing cross-correlation with a gaussian kernel (sigma = 2) that enables us to remove the noise in the image background. That way, we constitute, X_train, X_val and X_test.
+X_train is a 2,898 x 75,625 matrix.
 
 Using Principal Components Analysis, we are able to perform a first 2D visualization of the data, that gives the following result:
+
 ![Alt text](plots/pca_2d.png?raw=true "2D visualization after PCA")
 
 Let's look at the variance that wa can preserve while projecting on the principal loading vectors:
@@ -45,22 +46,40 @@ We choose a first model hyperparameter, that is the number of nearest neighbor t
 Computing the predictions on the validation and test data, we obtain the following results.
 The performance metrics chosen are Mean-Square Error MSE (or Root MSE), and the coefficient of determination R^2:
 
-Evaluation on the training set:
-    Mean Squared Error: 0.012767425810904072
-    RMSE: 0.11299303434683074
-    R^2: 0.9999940891547172
+    Evaluation on the training set:
+        Mean Squared Error: 0.012767425810904072
+        RMSE: 0.11299303434683074
+        R^2: 0.9999940891547172
     
-Evaluation on the validation set:
-    Mean Squared Error: 0.012422360248447204
-    RMSE: 0.11145564251507056
-    R^2: 0.9999942489072924
+    Evaluation on the validation set:
+        Mean Squared Error: 0.012422360248447204
+        RMSE: 0.11145564251507056
+        R^2: 0.9999942489072924
     
-Evaluation on the test set:
-    Mean Squared Error: 0.013457556935817806
-    RMSE: 0.11600671073613718
-    R^2: 0.9999937696495668
-    
-#### Conclusions
+    Evaluation on the test set:
+        Mean Squared Error: 0.013457556935817806
+        RMSE: 0.11600671073613718
+        R^2: 0.9999937696495668
+
+Let's look at the prediction accuracy, as if the problem was considered as a classification problem to have another observation of the performance of the model. Here are the results:
+
+    Accuracy of the training set: 98.9%
+    Accuracy of the validation set: 98.8%
+    Accuracy of the test set: 98.4%
+
+
+
+#### Conclusion
+We observe that the predictions are really close to the true headings for both the test and validation set.
+Moreover, the similar results between the training set, the validation set and the test set show that we did not overfit the data, because, the error are pretty similar and really low.
+The RMSE on the test data shows that in average, we make mistake on the heading of the order of 0.12° which is low.
+Even consider as a classification problem, we observe that the number of exact predictions is close to 100%.
+
+Preprocessing the data to compute the 5 loading vectors and project the vectorized image on them make the computation time low at runtime, compared to keeping the entirety of the data. We were able to do that because of the principal component analysis preserving most of the variance of the data even with a few components (5 components here).
+
+Also note that we did not use the validation set to perform hyperparameter optimization here. We could have used it to select the optimal number of nearest neighbor for example. But 3 showed good enough results and still make us able to keep a low computation runtime.
+
+
 
 
 

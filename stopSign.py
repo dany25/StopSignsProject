@@ -312,7 +312,7 @@ if __name__ == "__main__":
 
 
     """ For a new image """
-    
+    print(" #### Prediction on 'real' images ###")
     headings_new_img=[]
     # loading the new images
     real_img = mpimg.imread("real_images/1.jpg")

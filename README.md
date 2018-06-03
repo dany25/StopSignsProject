@@ -82,7 +82,11 @@ Also note that we did not use the validation set to perform hyperparameter optim
 #### Test on Real Data
 However, this model is based on clean images presenting only noise on them. Let's see how it deals with a real image where the background has not being removed or where there could be occlusions ...
 Let's perform our algorithm on this following image:
+
+
+
 ![Alt text](real_images/1.jpg?raw=true "Real image of a stop sign")
+
 We don't know the true heading of this image. But our machine learning model, after transforming it in grayscale, blurring, vectorizing, projecting on the first 5 components previously computed, and predicting the heading based on the 3-NN fitted model returns a prediction of a -78°, which is far from corresponding to the true heading (which is greater than 0).
 Even increasing the number of nearest neighbor show a maximum heading prediction of  6° which corresponds to this orientation:
 

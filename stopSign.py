@@ -13,13 +13,12 @@ import cv2
 from scipy.ndimage.filters import gaussian_filter
 from sklearn.decomposition import PCA
 from sklearn.neighbors import KNeighborsRegressor
-
-from skimage.feature import match_template
+#from skimage.feature import match_template
 
 
 # Tool functions
-def compute_red_percentage(img, treshold):
-    return len(img[img>=treshold])/(img.shape[0]*img.shape[1])
+def compute_red_percentage(img, threshold):
+    return len(img[img>=threshold])/(img.shape[0]*img.shape[1])
    
 def vectorize_single(image, keep_edge):
     """ Convert the images into feature vectors of size (width x height)"""
@@ -246,22 +245,6 @@ class StopSigns:
         print ("Accuracy of the {0} set: {1}".format(mode, acc))
         return classif[classif==0].shape[0]
         
-    def red_preprocessing(self, images):
-        """
-        Images are drawn from the training, validation or testing set.
-            images is usually: self.train_images, self.val_images, or self.test_images
-        Return the matrix of features drawn from the images
-        """
-        
-        # Compute red percentage in an image
-        red_percentages_ = []
-        
-        for i in range(images.shape[0]):
-            red = compute_red_percentage(images[i],self.red_threshold)
-            red_percentages_.append(red)
-        X = np.array(red_percentages_).reshape((-1,1))
-        
-        return X
             
     
 
@@ -308,11 +291,14 @@ if __name__ == "__main__":
     # Project the data + 2D visualization
     model.pca_transform(plot = 1)
     
+    # Fitting the model with k-Nearest Neighbor
     n_neighbors = 3
     model.fit(n_neighbors)
     
+    # Prediction
     model.predict()
 
+    # Performance evaluation
     model.score("training")
     model.score("validation")
     model.score("test")
@@ -327,17 +313,16 @@ if __name__ == "__main__":
 
     """ For a new image """
     
-    res=[]
+    headings_new_img=[]
     real_img = mpimg.imread("real_images/1.jpg")
     real_img_vec = vectorize_single(real_img, keep_edge=1)
     real_img_proj = model.pca.transform(real_img_vec.reshape((1,-1)))
     for n_neighbors in range(1,500):
         model.fit(n_neighbors, verbose=0)
-        res.append(model.neigh.predict(real_img_proj)[0][0])
+        headings_new_img.append(model.neigh.predict(real_img_proj)[0][0])
     plt.title("Heading function of the number of nearest neighbors")
-    plt.plot(res)
+    plt.plot(headings_new_img)
     plt.show()
-    
     
     
     
@@ -348,7 +333,7 @@ if __name__ == "__main__":
     # RED PERCENTAGE 
     red_threshold = 200
     
-    real_image_red_percentage = compute_red_percentage(real_img, red_threshold)
+    real_image_red_percentage = compute_red_percentage(real_img[0], red_threshold)
         
     red_distribution = []
     for i in range(model.train_images.shape[0]):
@@ -356,9 +341,46 @@ if __name__ == "__main__":
         red_distribution.append(red)
     red_distribution = np.array(red_distribution).reshape((-1,1))
     
+    plt.title("Red pixel percentage function of heading")
     plt.plot(model.headings,red_distribution[::18],c='r')
     plt.plot(model.headings,np.full((161,1),real_image_red_percentage),c='b')
     plt.show()
+    
+    
+    
+    
+
+    test = real_img.copy()
+    #test= model.train_images[0]
+    plt.imshow(test)
+    plt.show()
+
+    
+    only_red = np.zeros((275,275), dtype=np.uint16)
+    cb = 0
+    cg = 0
+    alpha = 0.04
+    for i in range(275):
+        for j in range(275):
+            if (test[i,j,1]==0):
+                cb = test[i,j,0]
+            else: 
+                cb = test[i,j,0]/test[i,j,1]
+            if (test[i,j,2]==0):
+                cg = test[i,j,0]
+            else: 
+                cg = test[i,j,0]/test[i,j,2]
+            R = cb*cg - alpha*(cb+cg)**2
+            only_red[i,j] = R
+    
+    only_red[only_red<10]=0
+    only_red[only_red>=10]=1
+
+    plt.imshow(only_red,cmap='gray')
+    plt.show()
+    
+    
+    print(len(only_red[only_red==1])/(only_red.shape[0]*only_red.shape[1]))
     
     """
     # TEMPLATE MATCHING ATTEMPT
@@ -379,13 +401,12 @@ if __name__ == "__main__":
     print("The template position is at: ",np.unravel_index(correlation_map.argmax()\
                             , correlation_map.shape))
     
-    
+    """
     # EDGES
-
-
+    """
     im3 = real_img.copy()
     im3 = gaussian_filter(im3, sigma = 2)
-    im3=im2.copy()
+    im3= model.train_images[2*18].copy()
     im3 = gaussian_filter(im3, sigma = 1.5)
     plt.imshow(im3)
     plt.show()
@@ -395,10 +416,12 @@ if __name__ == "__main__":
     plt.show()
     cannyEdges = cv2.Canny(np.uint8(grayImg*255),30,140) #accept only uint8 images
     plt.title("Canny Edge detector")
-    plt.imshow(cannyEdges,cmap="gray")
+    plt.imshow(gaussian_filter(cannyEdges,sigma=1),cmap="gray")
     plt.show()
+    
+    
+    plt.imshow(gaussian_filter(model.X_train[105*18].reshape(275,275),sigma=2))
     """
-
             
     """ SANDBOX """
     """
@@ -433,6 +456,24 @@ if __name__ == "__main__":
     white_img[white_img<white_threshold]=0
     plt.imshow(white_img,cmap='gray')
     plt.show()
+    
+    
+    def red_preprocessing(self, images):
+    
+        Images are drawn from the training, validation or testing set.
+            images is usually: self.train_images, self.val_images, or self.test_images
+        Return the matrix of features drawn from the images
+        
+        
+        # Compute red percentage in an image
+        red_percentages_ = []
+        
+        for i in range(images.shape[0]):
+            red = compute_red_percentage(images[i],self.red_threshold)
+            red_percentages_.append(red)
+        X = np.array(red_percentages_).reshape((-1,1))
+        
+        return X
     
     
     

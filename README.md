@@ -1,5 +1,5 @@
 
-# lvl5 Stop Sign Heading Problem
+# Stop Sign Heading Problem
 
 ## Challenge
 
@@ -11,7 +11,6 @@ We've provided a total of 4830 images for training, testing and validation.  The
 
 Images are located in `images/sign_<HEADING_DEGREES>_XX.jpg`
 
-#### Email George Tall <george@lvl5.ai> for any and all questions.
 
 
 ## My Solution
@@ -88,7 +87,7 @@ Let's perform our algorithm on this following image:
 ![Alt text](real_images/1.jpg?raw=true "Real image of a stop sign")
 
 We don't know the true heading of this image. But our machine learning model, after transforming it in grayscale, blurring, vectorizing, projecting on the first 5 components previously computed, and predicting the heading based on the 3-NN fitted model returns a prediction of a -78°, which is far from corresponding to the true heading (which is greater than 0).
-Even increasing the number of nearest neighbor show a maximum heading prediction of  6° which corresponds to this orientation:
+Even increasing the number of nearest neighbor show a maximum heading prediction of  6° which corresponds to this orientation (also not close to the right heading):
 
 ![Alt text](real_images/sign_6_0.jpg?raw=true "Stop Sign with a 6° heading")
 
@@ -97,7 +96,7 @@ Here is the plot showing the influence of the number of nearest neighbors consid
 ![Alt text](plots/on_real_image.png?raw=true "Influence of the number of Nearest Neighbors")
 
 
-This shows that our model overfit to some clean data and cannot be used as it is on not pre-processed images.
+This shows that our model overfit to some clean data and cannot be used as it is, on not pre-processed images.
 As the next steps considered, one option could be to detect the stop sign and perform image processing or segementation algorithm to remove the background. And then apply our model to predict the heading.
 
 
@@ -105,10 +104,24 @@ As the next steps considered, one option could be to detect the stop sign and pe
 ### Computer Vision Approach
 This approach intends to make the previous solution more robust to different and more realistic images.
 
+#### Ideas:
+- Robustness to occlusion and other factors due to a change of the scene (brightness, scale, rotation, translation) can be brought by performing some corners detection (like Harris process) and descriptions of thors interest points (using SIFT for example). Then recovering them in other realistic images and using a machine learning model based on the given data set may lead to a good prediction of the heading. Or using a more geometric approach by computing homographies (the image of the plane containing the stop is performed by a projective transformation) thanks to at least 4 pairs of corresponding points; could help to retrieve the heading value.
+- Perform some template matching by normalized cross-correlation on some specific corners of the image to retrieve their position. Use the data set to match the vectors linking the corners with a specific heading.
+- Use Edges and eventually some Hough Line Transforms methods to detect caracteristic vectors corrsponding to a specific heading value (would be predict by a machine learning model).
+- Use some properties of Stop Signs (color, shape, ... )
+
+Let's look at the last option first and observe the specific features of a stop sign that could help us retrieve the heading value.
+First, the color: flashy red! Not that common in the picture background which is usually the sky, building, trees, ...
+In our dataset, the percentage of red pixels (easily recovered using the first channel of the images) is strongly linked to the absolute value of the heading. The following image illustrates the percentage of red pixels in the image function of the heading.
+
+![Alt text](plots/red_percentage.png?raw=true "Percentage of red pixels function of the heading")
+
+We can fit easily this curve using degree 2 polynomial regression. On the test set, this would actually makes us able to retrieve the absolute value of the heading with a really good accuracy. 
 
 
 
 
+## References
 
 
 

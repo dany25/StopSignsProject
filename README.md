@@ -1,3 +1,4 @@
+
 # lvl5 Stop Sign Heading Problem
 
 ## Challenge
@@ -16,9 +17,57 @@ Images are located in `images/sign_<HEADING_DEGREES>_XX.jpg`
 ## My Solution
 
 ### Machine Learning Approach
+#### Splitting the dataset (*split_data*)
+we start by separating the dataset with the following ratios (that can be tuned): 60% for the training set, 20% for the validation set, and 20% for the testing set.
+For each heading, corresponds 30 images, from which I randomly sampled the corresponding number of train, validation, and test images.
 
 #### Data visualization
-Looking at the size of the images (275 x 275)
+The size of the images (275 x 275 = 75,625 pixels), it is feasible to vectorize each of them and store them into a matrix. That way, we constitute, X_train, X_val and X_test.
+X_train is a 2898 x 75625 matrix.
+
+Using Principal Components Analysis, we are able to perform a first 2D visualization of the data, that gives the following result:
+![Alt text](plots/pca_2d.png?raw=true "2D visualization after PCA")
+
+Let's look at the variance that wa can preserve while projecting on the principal loading vectors:
+![Alt text](plots/pca_explained_variance.png?raw=true "Preserved variance of the first components")
+
+Chosing k=5 components seems like a good choice, and enables us to preserve 70% of the variance of the data.
+
+#### Transforming and fitting the training data
+We then transform the training data by projecting the vectorized image vectors on the space spanned by the 5 principal loading vectors. We obtain three matrices X_train, X_val and X_test that we are going to use to train a model, validate to tune hyperparameter if needed and test it on a new source of data to obtain an accurate estimation of the performance of the model.
+
+We choose a Nearest-Neighbor Regression algorithm as the machine learning regression model. In fact, looking at the 2D-projection, we notice that the data remains far away from one to another when the heading is sensibly different, but the datapoint of the same heading are located in a small area.
+
+We choose a first model hyperparameter, that is the number of nearest neighbor to be equal to 3 and we fit the model with the training projected data.
+
+
+#### Prediction and Performance Evaluation
+Computing the predictions on the validation and test data, we obtain the following results.
+The performance metrics chosen are Mean-Square Error MSE (or Root MSE), and the coefficient of determination R^2:
+
+Evaluation on the training set:
+    Mean Squared Error: 0.012767425810904072
+    RMSE: 0.11299303434683074
+    R^2: 0.9999940891547172
+    
+Evaluation on the validation set:
+    Mean Squared Error: 0.012422360248447204
+    RMSE: 0.11145564251507056
+    R^2: 0.9999942489072924
+    
+Evaluation on the test set:
+    Mean Squared Error: 0.013457556935817806
+    RMSE: 0.11600671073613718
+    R^2: 0.9999937696495668
+    
+#### Conclusions
+
+
+
+
+
+
+
 
 
 

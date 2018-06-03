@@ -119,7 +119,7 @@ In our dataset, the percentage of red pixels (easily recovered using the first c
 We can fit easily this curve using degree 2 polynomial regression. On the test set, this would actually makes us able to retrieve the absolute value of the heading with a really good accuracy.
 
 But this approach on a real world image would be strongly sensitive to the scale. In fact, the blue line indicates the percentage of the real image found (79.37%). This percentage would corresponds to an absolute value of eading equal to 41° on the fitted curve.
-This image is an example of a 41° heading and as we see, this is still too much compared to the true heading of the real image considered earlier (around 25° approximately).
+This image is an example of a 41° heading and as we see, this is still too much compared to the true heading of the real image considered earlier (around 25° approximately). But this solution is better than the one previously found based on the K-nearest neighbor.
 
 ![Alt text](real_images/sign_41_0.jpg?raw=true "Stop Sign with a 41° heading")
 

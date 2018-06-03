@@ -331,7 +331,7 @@ if __name__ == "__main__":
     real_img = mpimg.imread("real_images/1.jpg")
     real_img_vec = vectorize_single(real_img, keep_edge=1)
     real_img_proj = model.pca.transform(real_img_vec.reshape((1,-1)))
-    for n_neighbors in range(1,50):
+    for n_neighbors in range(1,500):
         model.fit(n_neighbors, verbose=0)
         res.append(model.neigh.predict(real_img_proj)[0][0])
     plt.title("Heading function of the number of nearest neighbors")
@@ -344,9 +344,8 @@ if __name__ == "__main__":
     
     
     """ Computer Vision Features """
-    """
     
-    # RED PERCENTAGE ATTEMPT
+    # RED PERCENTAGE 
     red_threshold = 200
     
     real_image_red_percentage = compute_red_percentage(real_img, red_threshold)
@@ -361,7 +360,7 @@ if __name__ == "__main__":
     plt.plot(model.headings,np.full((161,1),real_image_red_percentage),c='b')
     plt.show()
     
-    
+    """
     # TEMPLATE MATCHING ATTEMPT
     NW = mpimg.imread("templates/NW.jpg")
     NW = gaussian_filter(NW, sigma = 2)
